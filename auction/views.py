@@ -33,11 +33,6 @@ class BetViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly]
 
-    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
-    def highlight(self, request, *args, **kwargs):
-        bet = self.get_object()
-        return Response(bet.highlighted)
-
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -54,11 +49,6 @@ class CatHedgehogViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly]
 
-    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
-    def highlight(self, request, *args, **kwargs):
-        cat_hedgehog = self.get_object()
-        return Response(cat_hedgehog.highlighted)
-
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -74,11 +64,6 @@ class LotViewSet(viewsets.ModelViewSet):
     serializer_class = LotSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly]
-
-    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
-    def highlight(self, request, *args, **kwargs):
-        lot = self.get_object()
-        return Response(lot.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
