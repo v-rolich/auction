@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 
 from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+from django.db import transaction
 
 from .models import Bet, CatHedgehog, Lot, User
 from .permissions import IsOwnerOrReadOnly
@@ -108,13 +109,16 @@ def make_transaction(bet):
     if payer.balance < amount:
         return Response(data={"Fail": "Insufficient funds to pay"}, status=status.HTTP_403_FORBIDDEN)
 
-    payer.balance -= amount
-    receiver.balance += amount
-    change_owner(bet)
-    lot.delete()
-    payer.save()
-    receiver.save()
-    lot.save()
+    with transaction.atomic():
+        payer.balance -= amount
+        payer.save()
+        receiver.balance += amount
+        receiver.save()
+
+        change_owner(bet)
+
+        lot.delete()
+        lot.save()
 
     return Response(data={"Success": "Deal has been completed successfully"}, status=status.HTTP_200_OK)
 
