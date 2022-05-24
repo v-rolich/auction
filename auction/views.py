@@ -2,6 +2,8 @@ from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+
 from .models import Bet, CatHedgehog, Lot, User
 from .permissions import IsOwnerOrReadOnly
 from .serializers import BetSerializer, CatHedgehogSerializer, LotSerializer, UserSerializer
@@ -92,10 +94,16 @@ def accept_bet(request, pk):
 
 
 def make_transaction(bet):
-    lot = bet.lot
-    payer = bet.owner
-    receiver = lot.owner
-    amount = bet.rate
+    try:
+        lot = bet.lot
+        payer = bet.owner
+        receiver = lot.owner
+        amount = bet.rate
+    except ObjectDoesNotExist or FieldDoesNotExist:
+        return Response(
+            data={"Error": "Object or field does not exist. Transaction failed"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     if payer.balance < amount:
         return Response(data={"Fail": "Insufficient funds to pay"}, status=status.HTTP_403_FORBIDDEN)
